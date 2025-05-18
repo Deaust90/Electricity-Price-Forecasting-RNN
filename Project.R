@@ -98,7 +98,7 @@ abline(h = 0, col = "red", lty = 2)
 
 # RNN implementation using a simple architecture (many to one RNN)
 
-# Xavier initialization for tanh activation
+# Xavier initialization
 rnn.weights.init <- function(input_dim, hidden_dim, output_dim) {
   xavier_limit_xh <- sqrt(6 / (input_dim + hidden_dim))
   W_xh <- matrix(runif(hidden_dim * input_dim, min = -xavier_limit_xh, max = xavier_limit_xh),
