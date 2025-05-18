@@ -120,3 +120,49 @@ lines(val_losses, col = "red", lwd = 2)
 legend("topright", legend = c("Train Loss", "Validation Loss"), 
        col = c("blue", "red"), lwd = 2)
 
+#_______________________________________________________________________________
+
+# Predict on training set
+train_preds_scaled <- rnn_predict_for_bgd_wrapper(
+  flat_weights = trained_weights,
+  X = x_train,
+  hid_n = 16,
+  out_n = 1,
+  input_dim = 1
+)$y_est
+
+# Predict on test set
+test_preds_scaled <- rnn_predict_for_bgd_wrapper(
+  flat_weights = trained_weights,
+  X = x_test,
+  hid_n = 16,
+  out_n = 1,
+  input_dim = 1
+)$y_est
+
+# Undo standardization (if y was standardized)
+train_preds <- train_preds_scaled * y_sd + y_mean
+test_preds  <- test_preds_scaled  * y_sd + y_mean
+
+par(mfrow = c(1, 2))  # 1 row, 2 columns
+
+plot(y_train, type = "l", col = "black", main = "Train: Actual vs Predicted",
+     xlab = "Time", ylab = "Price")
+lines(train_preds, col = "red")
+
+plot(y_test, type = "l", col = "black", main = "Test: Actual vs Predicted",
+     xlab = "Time", ylab = "Price")
+lines(test_preds, col = "red")
+
+plot(c(y_train, y_test), type = "l", col = "black", lwd = 2,
+     main = "Train and Test Prediction Comparison",
+     xlab = "Time", ylab = "Price")
+lines(c(train_preds, test_preds), col = "red", lwd = 2)
+abline(v = length(y_train), lty = 2, col = "blue")  # Mark train/test boundary
+legend("topright", legend = c("Actual", "Predicted"), col = c("black", "red"), lwd = 2)
+
+train_mse <- mse(y_train, train_preds)
+test_mse  <- mse(y_test, test_preds)
+
+cat("Train MSE:", train_mse, "\n")
+cat("Test MSE:", test_mse, "\n")

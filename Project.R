@@ -2,8 +2,13 @@ library(data.table)
 library(dplyr)        
 library(lubridate)    
 library(zoo)  
+library(ggplot2)
+library(tibble)
 
-# List all CSV files in the directory
+#_______________________________________________________________________________
+
+# Setting up the data
+
 csv_files <- list.files(
   path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task and Files-20250508/data_rnn", 
   pattern = "\\.csv$", 
@@ -49,14 +54,16 @@ complete_data <- complete_data %>%
   distinct(DateTime, .keep_all = TRUE)
 
 # Verify no missing values
-sum(is.na(complete_data$Price))  # Should return 0
+sum(is.na(complete_data$Price))  #Should return 0
 
 #________________________________________________________________________________
+
+# Setting up the independent and dependent variables
 
 lookback <- 24
 
 price_cap <- quantile(complete_data$Price, 0.995, na.rm = TRUE)
-complete_data$Price[complete_data$Price > price_cap] <- price_cap # replacing extreme prices with a more reasonable ceiling.
+complete_data$Price[complete_data$Price > price_cap] <- price_cap #replacing extreme prices with a more reasonable ceiling.
 
 data <- complete_data$Price 
 
@@ -315,6 +322,9 @@ rnn_predict_for_bgd_wrapper <- function(flat_weights, X, hid_n, out_n, input_dim
   return(list(y_est = y_preds))
 }
 
+#_______________________________________________________________________________
+
+# Model check
 
 input_dim <- 1  
 hidden_dim <- 16
@@ -339,71 +349,78 @@ trained_weights <- bgd(
 
 #_______________________________________________________________________________
 
-preds_scaled <- rnn_predict_for_bgd_wrapper(
-  trained_weights, x_test, hid_n = 16, out_n = 1, input_dim = 1
-)$y_est
+# MSE comparison and convergence plot
 
-preds <- preds_scaled * y_sd + y_mean  # inverse standardization
-actuals <- y_test
+train_losses <- c()
+val_losses <- c()
 
-plot(actuals, type = "l", col = "black")
-lines(preds, col = "red")
-legend("topright", legend = c("Actual", "Predicted"), col = c("black", "red"), lty = 1)
+for (epoch in 1:100) {
+  
+  # 1) Update weights by performing one BGD step here
+  trained_weights <- bgd(
+    weights = trained_weights,
+    y = y_train_scaled,
+    X = x_train,
+    hid_n = hidden_dim,
+    out_n = output_dim,
+    nn = rnn_predict_for_bgd_wrapper,
+    costderiv = rnn.cost.derivative.batch,
+    epochs = 1,
+    lr = 0.00001,
+    input_dim = input_dim
+  )
+  
+  # 2) Predict on train set with current weights
+  train_preds_scaled <- rnn_predict_for_bgd_wrapper(
+    flat_weights = trained_weights,
+    X = x_train,
+    hid_n = 16,
+    out_n = 1,
+    input_dim = 1
+  )$y_est
+  
+  # 3) Calculate training loss (MSE)
+  train_loss <- mean((train_preds_scaled - y_train_scaled)^2)
+  train_losses <- c(train_losses, train_loss)
+  
+  # 4) Predict on validation/test set with current weights
+  val_preds_scaled <- rnn_predict_for_bgd_wrapper(
+    flat_weights = trained_weights,
+    X = x_test,
+    hid_n = 16,
+    out_n = 1,
+    input_dim = 1
+  )$y_est
+  
+  # 5) Calculate validation loss (MSE)
+  val_loss <- mean((val_preds_scaled - y_test_scaled)^2)
+  val_losses <- c(val_losses, val_loss)
+  
+  # Optionally print progress every some epochs
+  if (epoch %% 10 == 0) {
+    cat(sprintf("Epoch %d: Train Loss = %.4f | Val Loss = %.4f\n", epoch, train_loss, val_loss))
+  }
+}
 
-subset_range <- 1:500
-plot(actuals[subset_range], type = "l", col = "black", lwd = 2,
-     main = "Actual Prices (First 500)", xlab = "Time", ylab = "Price")
 
-plot(preds[subset_range], type = "l", col = "red", lwd = 2,
-     main = "Predicted Prices (First 500)", xlab = "Time", ylab = "Price")
+plot(train_losses, type = "l", col = "blue", lwd = 2,
+     ylim = range(c(train_losses, val_losses)),
+     xlab = "Epoch", ylab = "Loss (MSE)",
+     main = "Training and Validation Loss Over Epochs")
+lines(val_losses, col = "red", lwd = 2)
+legend("topright", legend = c("Train Loss", "Validation Loss"), 
+       col = c("blue", "red"), lwd = 2)
 
+loss_df <- tibble(
+  Epoch = rep(1:length(train_losses), times = 2),
+  Loss = c(train_losses, val_losses),
+  Type = rep(c("Train", "Validation"), each = length(train_losses))
+)
 
-# Predict on training set
-train_preds_scaled <- rnn_predict_for_bgd_wrapper(
-  flat_weights = trained_weights,
-  X = x_train,
-  hid_n = 16,
-  out_n = 1,
-  input_dim = 1
-)$y_est
-
-# Predict on test set
-test_preds_scaled <- rnn_predict_for_bgd_wrapper(
-  flat_weights = trained_weights,
-  X = x_test,
-  hid_n = 16,
-  out_n = 1,
-  input_dim = 1
-)$y_est
-
-# Undo standardization (if y was standardized)
-train_preds <- train_preds_scaled * y_sd + y_mean
-test_preds  <- test_preds_scaled  * y_sd + y_mean
-
-par(mfrow = c(1, 2))  # 1 row, 2 columns
-
-plot(y_train, type = "l", col = "black", main = "Train: Actual vs Predicted",
-     xlab = "Time", ylab = "Price")
-lines(train_preds, col = "red")
-
-plot(y_test, type = "l", col = "black", main = "Test: Actual vs Predicted",
-     xlab = "Time", ylab = "Price")
-lines(test_preds, col = "red")
-
-plot(c(y_train, y_test), type = "l", col = "black", lwd = 2,
-     main = "Train and Test Prediction Comparison",
-     xlab = "Time", ylab = "Price")
-lines(c(train_preds, test_preds), col = "red", lwd = 2)
-abline(v = length(y_train), lty = 2, col = "blue")  # Mark train/test boundary
-legend("topright", legend = c("Actual", "Predicted"), col = c("black", "red"), lwd = 2)
-
-mse <- function(actual, pred) mean((actual - pred)^2)
-
-train_mse <- mse(y_train, train_preds)
-test_mse  <- mse(y_test, test_preds)
-
-cat("Train MSE:", train_mse, "\n")
-cat("Test MSE:", test_mse, "\n")
-
+ggplot(loss_df, aes(x = Epoch, y = Loss, color = Type)) +
+  geom_line(size = 1.2) +
+  geom_vline(xintercept = 50, linetype = "dashed", color = "gray") +  # e.g., convergence at epoch 50
+  labs(title = "Train vs Validation MSE Loss with Convergence", y = "MSE", x = "Epoch") +
+  theme_minimal(base_size = 14)
 
 
