@@ -402,15 +402,6 @@ for (epoch in 1:100) {
   }
 }
 
-
-plot(train_losses, type = "l", col = "blue", lwd = 2,
-     ylim = range(c(train_losses, val_losses)),
-     xlab = "Epoch", ylab = "Loss (MSE)",
-     main = "Training and Validation Loss Over Epochs")
-lines(val_losses, col = "red", lwd = 2)
-legend("topright", legend = c("Train Loss", "Validation Loss"), 
-       col = c("blue", "red"), lwd = 2)
-
 loss_df <- tibble(
   Epoch = rep(1:length(train_losses), times = 2),
   Loss = c(train_losses, val_losses),
@@ -419,7 +410,6 @@ loss_df <- tibble(
 
 ggplot(loss_df, aes(x = Epoch, y = Loss, color = Type)) +
   geom_line(size = 1.2) +
-  geom_vline(xintercept = 50, linetype = "dashed", color = "gray") +  # e.g., convergence at epoch 50
   labs(title = "Train vs Validation MSE Loss with Convergence", y = "MSE", x = "Epoch") +
   theme_minimal(base_size = 14)
 
