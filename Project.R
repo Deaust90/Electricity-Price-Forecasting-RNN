@@ -22,7 +22,7 @@ combined_data <- rbindlist(
 
 filtered_data <- combined_data[combined_data$MapCode == "DE_LU", ]
 
-# Convert datetime to POSIXct (ensure UTC timezone)
+# Convert datetime to POSIXct (UTC timezone)
 filtered_data$DateTime <- as.POSIXct(
   filtered_data$DateTime, 
   tz = "UTC"
@@ -45,7 +45,7 @@ complete_data <- full_time_seq %>%
 # Interpolate missing prices linearly
 complete_data$Price <- na.approx(complete_data$Price)
 
-# Fill leading/trailing NAs (if any remain)
+# Fill leading/trailing NAs
 complete_data$Price <- na.locf(complete_data$Price, na.rm = FALSE)
 complete_data$Price <- na.locf(complete_data$Price, fromLast = TRUE, na.rm = FALSE) #To ensure start and end do not have NAs
 
@@ -396,7 +396,6 @@ for (epoch in 1:100) {
   val_loss <- mean((val_preds_scaled - y_test_scaled)^2)
   val_losses <- c(val_losses, val_loss)
   
-  # Optionally print progress every some epochs
   if (epoch %% 10 == 0) {
     cat(sprintf("Epoch %d: Train Loss = %.4f | Val Loss = %.4f\n", epoch, train_loss, val_loss))
   }
@@ -410,7 +409,7 @@ loss_df <- tibble(
 
 ggplot(loss_df, aes(x = Epoch, y = Loss, color = Type)) +
   geom_line(size = 1.2) +
-  labs(title = "Train vs Validation MSE Loss with Convergence", y = "MSE", x = "Epoch") +
+  labs(title = "Train vs Validation MSE Loss", y = "MSE", x = "Epoch") +
   theme_minimal(base_size = 14)
 
 
