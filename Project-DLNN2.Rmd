@@ -1,15 +1,14 @@
 ---
-title: "Project Deep Learning and Neural Networks"
-author: "Udval Oyunsaikhan and Andres Cadena"
+title: "Project Deep Learning & Neural Networks"
+author: "Udval Oyunsaikhan & Andres Cadena"
 date: "2025-05-24"
 output:
-  rmdformats::readthedown:
-    css: RMD.css
-    self_contained: yes
-    code_folding: hide
+  html_document:
+    df_print: paged
+  pdf_document: default
 ---
 
-```{r Setup, include=FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(data.table)   
 library(dplyr)        
@@ -48,9 +47,7 @@ bgd <- function(weights, y, X, hid_n, out_n, nn, costderiv,
 }
 ```
 
-# Standard Recurrent Neural Network (RNN)
-
-## Setting up the data
+## Standard Recurrent Neural Network (RNN)
 
 ```{r Setting up the data}
 csv_files <- list.files(
@@ -98,11 +95,9 @@ complete_data <- complete_data %>%
   distinct(DateTime, .keep_all = TRUE)
 
 # Verify no missing values
-verify <- sum(is.na(complete_data$Price))  #Should return 0
+sum(is.na(complete_data$Price))  #Should return 0
 
 ```
-
-## Setting up the independent and dependent variables
 
 ```{r Setting up the independent and dependent variables}
 lookback <- 24
@@ -135,12 +130,10 @@ y_sd <- sd(y_train)
 y_train_scaled <- (y_train - y_mean) / y_sd
 y_test_scaled  <- (y_test - y_mean) / y_sd
 
-target <- plot(y_train_scaled, type = "l", main = "Target over Time (Standardized)", ylab = "Scaled Price")
+plot(y_train_scaled, type = "l", main = "Target over Time (Standardized)", ylab = "Scaled Price")
 abline(h = 0, col = "red", lty = 2)
 
 ```
-
-## RNN implementation using a simple architecture (many to one RNN)
 
 ```{r RNN implementation using a simple architecture (many to one RNN)}
 
@@ -370,9 +363,7 @@ rnn_predict_for_bgd_wrapper <- function(flat_weights, X, hid_n, out_n, input_dim
 
 ```
 
-## Training Vs. Validation
-
-```{r Training Vs. Validation, eval=FALSE, include=TRUE}
+```{r Training Vs. Validation}
 
 input_dim <- 1  
 hidden_dim <- 16
