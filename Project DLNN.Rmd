@@ -99,12 +99,11 @@ complete_data <- complete_data %>%
 
 # Verify no missing values
 verify <- sum(is.na(complete_data$Price))  #Should return 0
-
 ```
 
 ## Setting up the independent and dependent variables
 
-```{r Setting up the independent and dependent variables}
+```{r Setting up the independent and dependent variables, fig.show='hide'}
 lookback <- 24
 
 price_cap <- quantile(complete_data$Price, 0.995, na.rm = TRUE)
@@ -137,13 +136,11 @@ y_test_scaled  <- (y_test - y_mean) / y_sd
 
 target <- plot(y_train_scaled, type = "l", main = "Target over Time (Standardized)", ylab = "Scaled Price")
 abline(h = 0, col = "red", lty = 2)
-
 ```
 
-## RNN implementation using a simple architecture (many to one RNN)
+## RNN implementation using a simple architecture
 
 ```{r RNN implementation using a simple architecture (many to one RNN)}
-
 # Xavier initialization
 rnn.weights.init <- function(input_dim, hidden_dim, output_dim) {
   xavier_limit_xh <- sqrt(6 / (input_dim + hidden_dim))
@@ -367,13 +364,11 @@ rnn_predict_for_bgd_wrapper <- function(flat_weights, X, hid_n, out_n, input_dim
   # Return list containing predictions vector
   return(list(y_est = y_preds))
 }
-
 ```
 
 ## Training Vs. Validation
 
 ```{r Training Vs. Validation, eval=FALSE, include=TRUE}
-
 input_dim <- 1  
 hidden_dim <- 16
 output_dim <- 1
@@ -442,7 +437,6 @@ ggplot(loss_df, aes(x = Epoch, y = Loss, color = Type)) +
   geom_line(size = 1.2) +
   labs(title = "Train vs Validation MSE Loss", y = "MSE", x = "Epoch") +
   theme_minimal(base_size = 14)
-
 ```
 
 ## Biggest Challenge I
