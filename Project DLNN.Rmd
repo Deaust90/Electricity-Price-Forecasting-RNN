@@ -457,7 +457,7 @@ We had to clarify that we wanted suggestions related on how to deal with the dat
 
 This experience taught us that AI is a powerful assistant, but one that need much and clear information. So, the user is the guidance and the one that must filter its suggestions using acquired knowledge and critical thinking.
 
-## Tensorflow's recurrent neural network (RNN)
+# Tensorflow's recurrent neural network (RNN)
 
 ```{r pressure}
 plot(pressure)
