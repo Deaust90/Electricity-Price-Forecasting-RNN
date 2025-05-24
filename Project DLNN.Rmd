@@ -98,6 +98,7 @@ abline(h = 0, col = "red", lty = 2)
 ```
 
 ```{r RNN implementation using a simple architecture (many to one RNN)}
+
 # Xavier initialization
 rnn.weights.init <- function(input_dim, hidden_dim, output_dim) {
   xavier_limit_xh <- sqrt(6 / (input_dim + hidden_dim))
