@@ -62,11 +62,11 @@ bgd <- function(weights, y, X, hid_n, out_n, nn, costderiv,
 ## Setting up the data
 
 ```{r Setting up the data}
-source("C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\funcs_mlr.R")
+#source("C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\funcs_mlr.R")
 
 csv_files <- list.files(
-  path = "C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\data_rnn",
-  #path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task and Files-20250508/data_rnn", 
+  #path = "C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\data_rnn",
+  path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task and Files-20250508/data_rnn", 
   pattern = "\\.csv$", 
   full.names = TRUE)
 
@@ -468,7 +468,6 @@ However, AI required clear contextual information as sometimes it was pointing o
 We had to clarify that we wanted suggestions related on how to deal with the data, and not with the model architecture. Once we did that, we got the capping strategy, which was incredible helpful.
 
 This experience taught us that AI is a powerful assistant, but one that need much and clear information. So, the user is the guidance and the one that must filter its suggestions using acquired knowledge and critical thinking.
-
 
 For training the TensorFlow model, we used **Google AI Studio**, which provided access to **Gemini 2.5 Pro Preview (05.06)**. This tool was helpful in identifying potential issues early and suggesting possible solutions throughout the development process.
 
