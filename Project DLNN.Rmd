@@ -398,6 +398,22 @@ ggplot(loss_df, aes(x = Epoch, y = Loss, color = Type)) +
 
 ```
 
+## Biggest Challenge I 
+
+One of the biggest challenges we faced was debugging, especially to know how to deal with vanishing and exploding gradients. Initially, our model was getting either exploding gradients or vanishing ones. To address this, we started to experiment with different activation and initilization functions. At first, we tried using ReLU activation function with He initialization, as we remembered from the tutorials that those were widely recommended fuctions to use nowadays. However, as the professor constantly emphasized, the agorithms and fuctions used are also problem dependent. You must try which one works the best for your specific data and task.
+
+After doing some research, we got to the conclusion that when dealing with negative values Tanh was more appropiate as an activation fuction. Along with it, we applied Xavier initialization. This change was groundbreaking; we immediately saw a huge improvement in performance. 
+
+Nevertheless, our MSE remained around thousands, which was far from acceptable. This led us to look the data closely again. At the beginning, we indentified some outliers, but we understimated their impact. On closer inspection, we reaized these extreme values might be harming the trianing process. We then tried a strategy that AI recommended us: capping the outliers (replacing extreme prices with a more reasonable ceiling). This was indeed a game-changer, since we were able to achieve a really low MSE, or at least one acceptable compared to our initial attempts.
+
+## Use of AI
+AI played a critical role to debug in helping us to debug the model. It is often hard to check every detail of the code manually, but AI was able to read everything quickly and identify possible errors in seconds.
+
+However, AI required clear contextual information as sometimes it was pointing out errors that were not present. For example, when we asked for help improving model performance, the AI mainly focused on changes in activation functions, initialization or optimization algorithms. 
+
+We had to clarify that we wanted suggestions related on how to deal with the data, and not with the model architecture. Once we did that, we got the capping strategy, which was incredible helpful. 
+
+This experience taught us that AI is a powerful assistant, but one that need much and clear information. So, the user is the guidance and the one that must filter its suggestions using acquired knowledge and critical thinking.
 
 ## Tensorflow’s recurrent neural network (RNN)
 
