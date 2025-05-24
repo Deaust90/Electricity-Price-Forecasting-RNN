@@ -10,6 +10,13 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(data.table)   
+library(dplyr)        
+library(lubridate)    
+library(zoo)
+library(tensorflow)
+library(keras)
+library(tidyverse)
 ```
 
 ## Standard Recurrent Neural Network (RNN)
