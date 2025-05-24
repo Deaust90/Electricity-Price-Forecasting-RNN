@@ -20,6 +20,9 @@ This repository contains the final assignment for the *Deep Learning and Neural 
 - `gradient_check.R`  
   ➤ Performs a numerical gradient check to validate the gradient computations.
 
+- `funcs_mlr.R`  
+➤ Contains a reference list of hyperparameters used throughout the project.
+
 ## Instructions to Run
 
 To fully replicate the environment and results:
