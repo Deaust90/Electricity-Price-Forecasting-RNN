@@ -2,7 +2,10 @@
 title: "Project Deep Learning & Neural Networks"
 author: "Udval Oyunsaikhan & Andres Cadena"
 date: "2025-05-24"
-output: pdf_document
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
