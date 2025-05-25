@@ -65,7 +65,7 @@ bgd <- function(weights, y, X, hid_n, out_n, nn, costderiv,
 
 csv_files <- list.files(
   #path = "C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\data_rnn",
-  path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task and Files-20250508/data_rnn", 
+  path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task/data_rnn", 
   pattern = "\\.csv$", 
   full.names = TRUE)
 
