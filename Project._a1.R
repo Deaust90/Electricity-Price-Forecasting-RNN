@@ -10,7 +10,7 @@ library(tibble)
 # Setting up the data
 
 csv_files <- list.files(
-  path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task and Files-20250508/data_rnn", 
+  path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task/data_rnn", 
   pattern = "\\.csv$", 
   full.names = TRUE)
 
