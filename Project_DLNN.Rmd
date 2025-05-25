@@ -19,7 +19,6 @@ knitr::opts_chunk$set(
 ```
 
 ```{r}
-
 library(data.table)   
 library(dplyr)        
 library(lubridate)    
@@ -451,7 +450,78 @@ ggplot(loss_df, aes(x = Epoch, y = Loss, color = Type)) +
   theme_minimal(base_size = 14)
 ```
 
-## Biggest Challenge I
+## Checking gradients
+
+```{r Checking gradients}
+# Forward pass and loss for Wx
+fwd_Wx <- function(Wx, H_prev, X_t, Y_t, Wh, Wo) {
+  Z_t <- Wh * H_prev + Wx * X_t
+  H_t <- tanh(Z_t)
+  Y_pred <- Wo * H_t
+  L <- 0.5 * (Y_pred - Y_t)^2
+  return(as.numeric(L))
+}
+
+# Analytical gradient dL/dWx
+analytical_grad_Wx <- function(Wx, H_prev, X_t, Y_t, Wh, Wo) {
+  Z_t <- Wh * H_prev + Wx * X_t
+  H_t <- tanh(Z_t)
+  Y_pred <- Wo * H_t
+  
+  dL_dYpred <- Y_pred - Y_t
+  dYpred_dHt <- Wo
+  dHt_dZt <- 1 - tanh(Z_t)^2
+  dZt_dWx <- X_t
+  
+  return(dL_dYpred * dYpred_dHt * dHt_dZt * dZt_dWx)
+}
+
+# Forward pass and loss for Wo
+fwd_Wo <- function(Wo, H_prev, X_t, Y_t, Wh, Wx) {
+  Z_t <- Wh * H_prev + Wx * X_t
+  H_t <- tanh(Z_t)
+  Y_pred <- Wo * H_t
+  L <- 0.5 * (Y_pred - Y_t)^2
+  return(as.numeric(L))
+}
+
+# Analytical gradient dL/dWo
+analytical_grad_Wo <- function(Wo, H_prev, X_t, Y_t, Wh, Wx) {
+  Z_t <- Wh * H_prev + Wx * X_t
+  H_t <- tanh(Z_t)
+  Y_pred <- Wo * H_t
+  
+  dL_dYpred <- Y_pred - Y_t
+  dYpred_dWo <- H_t
+  
+  return(dL_dYpred * dYpred_dWo)
+}
+
+# Numerical gradient via finite differences
+numerical_grad <- function(param, f, eps = 1e-5) {
+  f_plus  <- f(param + eps)
+  f_minus <- f(param - eps)
+  return((f_plus - f_minus) / (2 * eps))
+}
+
+# Example fixed values
+Wh <- 0.5; Wx <- 0.3; Wo <- 0.7
+H_prev <- 0.1; X_t <- 0.2; Y_t <- 0.05
+
+# Check Wx gradient
+num_grad_Wx <- numerical_grad(Wx, function(w) fwd_Wx(w, H_prev, X_t, Y_t, Wh, Wo))
+ana_grad_Wx <- analytical_grad_Wx(Wx, H_prev, X_t, Y_t, Wh, Wo)
+cat("Wx numerical gradient:", num_grad_Wx, "\n")
+cat("Wx analytical gradient:", ana_grad_Wx, "\n\n")
+
+# Check Wo gradient
+num_grad_Wo <- numerical_grad(Wo, function(w) fwd_Wo(w, H_prev, X_t, Y_t, Wh, Wx))
+ana_grad_Wo <- analytical_grad_Wo(Wo, H_prev, X_t, Y_t, Wh, Wx)
+cat("Wo numerical gradient:", num_grad_Wo, "\n")
+cat("Wo analytical gradient:", ana_grad_Wo, "\n")
+```
+
+## Biggest challenge I
 
 One of the biggest challenges we faced was debugging, especially to know how to deal with vanishing and exploding gradients. Initially, our model was getting either exploding gradients or vanishing ones. To address this, we started to experiment with different activation and initialization functions. At first, we tried using ReLU activation function with He initialization, as we remembered from the tutorials that those were widely recommended functions to use nowadays. However, as the professor constantly emphasized, the algorithms and functions used are also problem dependent. You must try which one works the best for your specific data and task.
 
@@ -459,7 +529,7 @@ After doing some research, we got to the conclusion that when dealing with negat
 
 Nevertheless, our MSE remained around thousands, which was far from acceptable. This led us to look the data closely again. At the beginning, we identified some outliers, but we underestimated their impact. On closer inspection, we realized these extreme values might be harming the training process. We then tried a strategy that AI recommended us: capping the outliers (replacing extreme prices with a more reasonable ceiling). This was indeed a game-changer, since we were able to achieve a really low MSE, or at least one acceptable compared to our initial attempts.
 
-## Use of AI
+## Use of AI I
 
 AI played a critical role to debug in helping us to debug the model. It is often hard to check every detail of the code manually, but AI was able to read everything quickly and identify possible errors in seconds.
 
@@ -482,7 +552,7 @@ This helped us focus on parameters like weight shapes, loss function definitions
 
 # Tensorflow's Recurrent Neural Network (RNN)
 
-## TensorFlow Model Definition and Manual Weight Setting
+## TensorFlow model definition and manual weight setting
 
 ```{r}
 
@@ -574,7 +644,7 @@ print("TensorFlow model defined and weights manually set from R initial weights.
 summary(model_tf_manual_weights)
 ```
 
-## Reshape Input Data for TensorFlow and compiling
+## Reshape input data for TensorFlow and compiling
 
 ```{r}
 num_train_samples <- nrow(x_train)
@@ -603,7 +673,7 @@ loss_fn_tf_reporting_mean_mse <- tf$keras$losses$MeanSquaredError()
 
 ```
 
-## TensorFlow BGD Training Loop
+## TensorFlow BGD training loop
 
 ```{r, fig.show='hide'}
 
@@ -676,38 +746,38 @@ for (epoch in 1:tf_epochs) {
 
 ```
 
-## Biggest Challenge II
+## Biggest challenge II
 
-## Achieving Similar Results in TensorFlow Compared to the Standard RNN in R
+## Achieving similar results in tensorFlow compared to the standard RNN in R
 
 Reproducing the behavior of a standard RNN implemented in R using TensorFlow required several key adjustments. Understanding how the R-based RNN achieved its loss values—and what computational assumptions it made—was crucial for aligning TensorFlow's setup accordingly.
 
--   **Weight Import:**\
+-   **Weight import:**\
     Although we initialized the weights in TensorFlow using the same seed and structure, the model's performance initially differed significantly from the R implementation. To resolve this, we directly imported the R-initialized weights into the TensorFlow model, ensuring both models started from the exact same parameters.
 
--   **Sum of Gradients:**\
+-   **Sum of gradients:**\
     In our custom R training loop, gradients are computed based on the **sum** of the loss across all samples (as is typical in Batch Gradient Descent). By contrast, TensorFlow defaults to using the **mean**. To match the R behavior, we implemented a custom loss function in TensorFlow that preserved the summed gradient behavior.
 
--   **Loss Function Definition:**\
+-   **Loss function definition:**\
     Our course defined the loss as $0.5 \times (y_{\text{true}} - \hat{y})^2$, whereas TensorFlow's built-in loss functions typically compute the mean squared error $\text{mean}((y_{\text{true}} - y_{\text{pred}})^2)$. We addressed this mismatch by defining a custom loss function in TensorFlow that explicitly matched the R formulation.
 
--   **TensorFlow Input Format:**\
+-   **TensorFlow input format:**\
     In R, the input data was shaped as `(samples, timesteps)`. However, TensorFlow expects RNN input in the format `(samples, timesteps, features)`. We resolved this discrepancy by explicitly reshaping the input arrays before feeding them into the TensorFlow model.
 
-# GRU Diagram Creation
+# GRU diagram creation
 
-## GRU Diagram
+## GRU diagram
 
 ![](GRU_Updated.png)
 
 
-## GRU Diagram Creation Challenges
+## GRU diagram creation challenges
 
 The biggest challenge in creating the GRU diagram was understanding how the GRU actually works. To do this effectively, we first needed to understand how LSTM functions and what the course-provided LSTM diagram truly represented.
 
 While researching GRUs, we encountered many variations in diagrams and notations across different sources. The lack of a universal standard for GRU diagrams created confusion. Ultimately, this challenge was resolved by focusing on the **formulas** rather than the visuals, and by consistently using the **notation introduced in our course’s LSTM diagram** for clarity and consistency.
 
-## Use of AI
+## Use of AI II
 
 The use of AI tools for this section was significantly lower compared to previous parts of the project. Tools like ChatGPT were helpful for textual explanations but not ideal for generating or explaining complex diagrams such as GRU architectures.
 
@@ -718,7 +788,7 @@ Instead, we relied more on **video-based explanations** and **research papers wi
 - Clarify differences in terminology and notation across sources.
 
 
-# Overall Reflection
+# Overall reflection
 
 
 
