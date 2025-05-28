@@ -334,21 +334,6 @@ set.seed(1234)
 initial_weights_list <- rnn.weights.init(input_dim, hidden_dim, output_dim)
 trained_weights <- rnn.weights.pack(initial_weights_list)
 
-trained_weights <- bgd(
-  weights = initial_weights_flat,
-  y = y_train_scaled,
-  X = x_train,
-  hid_n = hidden_dim,
-  out_n = output_dim,
-  nn = rnn_predict_for_bgd_wrapper,
-  costderiv = rnn.cost.derivative.batch,
-  epochs = 100,
-  lr = 0.00001,
-  input_dim = input_dim
-)
-
-#_______________________________________________________________________________
-
 # MSE comparison and convergence plot
 
 train_losses <- c()
