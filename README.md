@@ -21,7 +21,7 @@ This repository contains the final assignment for the *Deep Learning and Neural 
   ➤ Performs a numerical gradient check to validate the gradient computations.
 
 - `funcs_mlr.R`  
-➤ Contains a reference list of hyperparameters used throughout the project.
+➤ Contains a reference list of hyperparameters used throughout the project. Please make sure to use this file as custom BGD function has been revised from the course provided file.
 
 ## Instructions to Run
 
