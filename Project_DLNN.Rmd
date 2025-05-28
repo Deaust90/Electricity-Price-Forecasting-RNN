@@ -43,15 +43,15 @@ X.standardize <- function(X_train, X_test){
 bgd <- function(weights, y, X, hid_n, out_n, nn, costderiv, 
                 epochs = 3000, lr = 0.00001, ...){
   
-  for(i in 1:epochs){
-    
+  latest_grad <- NULL
+  
+  for (i in 1:epochs) {
     deriv <- costderiv(weights, y, X, nn, hid_n, out_n, ...)
-    
-    weights <- weights - lr*deriv
-    
+    weights <- weights - lr * deriv
+    latest_grad <- deriv
   }
   
-  return(weights)
+  return(list(weights = weights, gradients = latest_grad))
   
 }
 ```
@@ -394,7 +394,7 @@ val_losses <- c()
 for (epoch in 1:100) {
   
   # 1) Update weights by performing one BGD step here
-  trained_weights <- bgd(
+  bgd_result <- bgd(
     weights = trained_weights,
     y = y_train_scaled,
     X = x_train,
@@ -406,6 +406,9 @@ for (epoch in 1:100) {
     lr = 0.00001,
     input_dim = input_dim
   )
+  
+  trained_weights <- bgd_result$weights
+  gradients <- bgd_result$gradients
   
   # 2) Predict on train set with current weights
   train_preds_scaled <- rnn_predict_for_bgd_wrapper(
@@ -435,6 +438,10 @@ for (epoch in 1:100) {
   
   if (epoch %% 10 == 0) {
     cat(sprintf("Epoch %d: Train Loss = %.4f | Val Loss = %.4f\n", epoch, train_loss, val_loss))
+    
+    # Gradient norm
+    grad_norm <- sqrt(sum(gradients^2))
+    cat(sprintf("Gradient L2 Norm: %.6f\n", grad_norm))
   }
 }
 
@@ -789,4 +796,9 @@ Instead, we relied more on **video-based explanations** and **research papers wi
 
 
 # Overall reflection
+
+Hand-coding neural networks from scratch is of course an enriching experience as we get involved with almost every detail of the model. It is a real challenge though, as designing a neural network requires extensive debugging and continuous problem-solving to different kind of problems, not only related to the architecture itself but also to data handling and preprocessing.
+
+As we have mentioned throughout the project, the role of AI is incredibly significant as a time-saving and problem-solving tool, especially when facing unfamiliar challenges. However, AI remains a tool whose effectiveness depends entirely on the quality of the prompts provided. We have found out that crafting clear, context-rich, and precise prompts is essential to obtaining valuable solutions. This could only be achieved if the user has the sufficient knowledge to filter, guide and interpret AI’s assistance effectively.
+
 

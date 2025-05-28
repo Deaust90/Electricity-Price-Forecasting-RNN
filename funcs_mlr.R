@@ -144,15 +144,15 @@ costNN_deriv <- function(weights, y, X, nn, hid_n, out_n, ...) {
 bgd <- function(weights, y, X, hid_n, out_n, nn, costderiv, 
                 epochs = 3000, lr = 0.00001, ...){
   
-  for(i in 1:epochs){
-    
+  latest_grad <- NULL
+  
+  for (i in 1:epochs) {
     deriv <- costderiv(weights, y, X, nn, hid_n, out_n, ...)
-    
-    weights <- weights - lr*deriv
-    
+    weights <- weights - lr * deriv
+    latest_grad <- deriv
   }
   
-  return(weights)
+  return(list(weights = weights, gradients = latest_grad))
   
 }
 

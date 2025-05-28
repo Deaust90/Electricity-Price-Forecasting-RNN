@@ -166,3 +166,56 @@ test_mse  <- mse(y_test, test_preds)
 
 cat("Train MSE:", train_mse, "\n")
 cat("Test MSE:", test_mse, "\n")
+
+for (epoch in 1:100) {
+  
+  # 1) Perform one BGD step and get updated weights and gradients
+  bgd_result <- bgd(
+    weights = trained_weights,
+    y = y_train_scaled,
+    X = x_train,
+    hid_n = hidden_dim,
+    out_n = output_dim,
+    nn = rnn_predict_for_bgd_wrapper,
+    costderiv = rnn.cost.derivative.batch,
+    epochs = 1,
+    lr = 0.00001,
+    input_dim = input_dim
+  )
+  
+  trained_weights <- bgd_result$weights
+  gradients <- bgd_result$gradients
+  
+  # 2) Predict on train set
+  train_preds_scaled <- rnn_predict_for_bgd_wrapper(
+    flat_weights = trained_weights,
+    X = x_train,
+    hid_n = hidden_dim,
+    out_n = output_dim,
+    input_dim = input_dim
+  )$y_est
+  
+  train_loss <- mean((train_preds_scaled - y_train_scaled)^2)
+  train_losses <- c(train_losses, train_loss)
+  
+  # 3) Predict on validation/test set
+  val_preds_scaled <- rnn_predict_for_bgd_wrapper(
+    flat_weights = trained_weights,
+    X = x_test,
+    hid_n = hidden_dim,
+    out_n = output_dim,
+    input_dim = input_dim
+  )$y_est
+  
+  val_loss <- mean((val_preds_scaled - y_test_scaled)^2)
+  val_losses <- c(val_losses, val_loss)
+  
+  if (epoch %% 10 == 0) {
+    cat(sprintf("Epoch %d: Train Loss = %.6f | Val Loss = %.6f\n", epoch, train_loss, val_loss))
+    
+    # Gradient norm
+    grad_norm <- sqrt(sum(gradients^2))
+    cat(sprintf("Gradient L2 Norm: %.6f\n", grad_norm))
+  }
+}
+

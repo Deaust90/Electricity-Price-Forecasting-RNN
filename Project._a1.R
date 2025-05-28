@@ -357,7 +357,7 @@ val_losses <- c()
 for (epoch in 1:100) {
   
   # 1) Update weights by performing one BGD step here
-  trained_weights <- bgd(
+  bgd_result <- bgd(
     weights = trained_weights,
     y = y_train_scaled,
     X = x_train,
@@ -369,6 +369,9 @@ for (epoch in 1:100) {
     lr = 0.00001,
     input_dim = input_dim
   )
+  
+  trained_weights <- bgd_result$weights
+  gradients <- bgd_result$gradients
   
   # 2) Predict on train set with current weights
   train_preds_scaled <- rnn_predict_for_bgd_wrapper(
@@ -398,6 +401,10 @@ for (epoch in 1:100) {
   
   if (epoch %% 10 == 0) {
     cat(sprintf("Epoch %d: Train Loss = %.4f | Val Loss = %.4f\n", epoch, train_loss, val_loss))
+    
+    # Gradient norm
+    grad_norm <- sqrt(sum(gradients^2))
+    cat(sprintf("Gradient L2 Norm: %.6f\n", grad_norm))
   }
 }
 
