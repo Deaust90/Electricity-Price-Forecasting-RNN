@@ -28,9 +28,10 @@ This repository contains the final assignment for the *Deep Learning and Neural 
 To fully replicate the environment and results:
 
 1. **Load all files into your R environment.**
-2. **Run `project_a1.R` first** — this initializes and trains the base R implementation of the RNN.
-3. **Then run `project_a2.R`** — to run the RNN with TensorFlow.
-4. You may consult:
+2. Check out the HTML for a nice glance of all submission.
+3. **Run `project_a1.R` first** — this initializes and trains the base R implementation of the RNN.
+4. **Then run `project_a2.R`** — to run the RNN with TensorFlow.
+5. You may consult:
    - `parameters_reference_only.R` for parameter tuning or documentation.
    - `gradient_check.R` to manually inspect the correctness of gradient calculations.
 
