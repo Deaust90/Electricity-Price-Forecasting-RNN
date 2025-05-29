@@ -9,11 +9,11 @@ library(tibble)
 
 # Setting up the data
 
-source("C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\funcs_mlr.R")
+#source("C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\funcs_mlr.R")
 
 csv_files <- list.files(
-  # path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task/data_rnn",
-  path = "/Users/udwal/Documents/Studies_Viadrina/semester_3/DeepLearning/project/data_rnn",
+  path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task/data_rnn",
+  #path = "/Users/udwal/Documents/Studies_Viadrina/semester_3/DeepLearning/project/data_rnn",
   pattern = "\\.csv$", 
   full.names = TRUE)
 
