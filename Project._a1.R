@@ -9,8 +9,11 @@ library(tibble)
 
 # Setting up the data
 
+source("C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\funcs_mlr.R")
+
 csv_files <- list.files(
-  path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task/data_rnn", 
+  # path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task/data_rnn",
+  path = "/Users/udwal/Documents/Studies_Viadrina/semester_3/DeepLearning/project/data_rnn",
   pattern = "\\.csv$", 
   full.names = TRUE)
 
@@ -334,10 +337,13 @@ set.seed(1234)
 initial_weights_list <- rnn.weights.init(input_dim, hidden_dim, output_dim)
 trained_weights <- rnn.weights.pack(initial_weights_list)
 
+
 # MSE comparison and convergence plot
 
 train_losses <- c()
 val_losses <- c()
+
+grad_sums_r <- numeric(100)
 
 for (epoch in 1:100) {
   
@@ -357,6 +363,7 @@ for (epoch in 1:100) {
   
   trained_weights <- bgd_result$weights
   gradients <- bgd_result$gradients
+  grad_sums_r[epoch] <- sum(gradients)
   
   # 2) Predict on train set with current weights
   train_preds_scaled <- rnn_predict_for_bgd_wrapper(

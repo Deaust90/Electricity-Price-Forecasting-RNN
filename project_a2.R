@@ -122,51 +122,65 @@ custom_loss_tf_sum_half_mse <- function(y_true, y_pred) {
   return(sum_half_squared_difference)
 }
 
-# Standard MSE for reporting
-loss_fn_tf_reporting_mean_mse <- tf$keras$losses$MeanSquaredError()
-
 
 ## 3.4 TensorFlow BGD Training Loop ------------------------------
 
+# -----------------------
 # Custom Training Step Function
+# -----------------------
 train_step_tf <- function(model, optimizer, x_batch, y_batch, loss_for_grads_fn) {
   with(tf$GradientTape() %as% tape, {
     predictions <- model(x_batch, training = TRUE)
     loss_value_for_grads <- loss_for_grads_fn(y_batch, predictions)
   })
   grads <- tape$gradient(loss_value_for_grads, model$trainable_variables)
-  
   optimizer$apply_gradients(zip_lists(grads, model$trainable_variables))
-  return(loss_value_for_grads)
+  
+  return(list(loss = loss_value_for_grads, grads = grads))  # return both
 }
 
-
+# -----------------------
+# Training Setup
+# -----------------------
 tf_epochs <- 100 # same as R
 
-# For storing losses and initial gradients
+# For storing losses and gradient sums
 tf_train_custom_sum_loss_epoch <- numeric(tf_epochs)
 tf_train_reported_mse_epoch    <- numeric(tf_epochs)
 tf_val_reported_mse_epoch      <- numeric(tf_epochs)
-initial_summed_grads_tf_list   <- NULL
+grad_sums_tf <- numeric(tf_epochs)
 
-
+# Optional: Plot setup
 plot(1, type="n", xlim=c(1, tf_epochs), ylim=c(0, 1), 
      xlab="Epoch", ylab="MSE", main="Training vs Validation MSE")
 legend("topright", legend=c("Train MSE", "Val MSE"), col=c("blue", "red"), lty=1)
 
-print("Starting TensorFlow BGD Training (with manually set R initial weights)...")
+cat("Starting TensorFlow BGD Training (with manually set R initial weights)...\n")
+
+# -----------------------
+# Training Loop
+# -----------------------
 for (epoch in 1:tf_epochs) {
-  # Training step
-  current_epoch_sum_loss <- train_step_tf(
+  # --- 1. Training step
+  train_result <- train_step_tf(
     model_tf_manual_weights,
     optimizer_tf,
     x_train_tf,
     y_train_scaled_tf,
     custom_loss_tf_sum_half_mse
   )
-  tf_train_custom_sum_loss_epoch[epoch] <- as.numeric(current_epoch_sum_loss)
   
-  # MSE for train/val
+  current_epoch_sum_loss <- as.numeric(train_result$loss)
+  tf_train_custom_sum_loss_epoch[epoch] <- current_epoch_sum_loss
+  
+  # --- 2. Sum of gradients (for comparison)
+  grads <- train_result$grads
+  grad_sums_tf[epoch] <- sum(sapply(grads, function(g) {
+    if (is.null(g)) return(0)
+    sum(g$numpy())
+  }))
+  
+  # --- 3. Train and validation MSE
   train_preds_tf_epoch <- model_tf_manual_weights(x_train_tf, training = FALSE)
   current_train_mse <- loss_fn_tf_reporting_mean_mse(y_train_scaled_tf, train_preds_tf_epoch)
   tf_train_reported_mse_epoch[epoch] <- as.numeric(current_train_mse)
@@ -175,27 +189,28 @@ for (epoch in 1:tf_epochs) {
   current_val_mse <- loss_fn_tf_reporting_mean_mse(y_val_scaled_tf, val_preds_tf_epoch)
   tf_val_reported_mse_epoch[epoch] <- as.numeric(current_val_mse)
   
-  # 📈 Add this block for live plotting every 5 epochs
+  # --- 4. Live plot update
   if (epoch %% 5 == 0 || epoch == 1) {
     lines(1:epoch, tf_train_reported_mse_epoch[1:epoch], type="l", col="blue")
     lines(1:epoch, tf_val_reported_mse_epoch[1:epoch], type="l", col="red")
   }
   
-  # Console progress
+  # --- 5. Console output + safety check
   if (epoch %% 10 == 0 || epoch == 1) {
     cat(sprintf("TF Epoch %d: Train = %.6f, Val = %.6f\n",
                 epoch, current_train_mse, current_val_mse))
     
-    loss_val_numeric <- as.numeric(current_epoch_sum_loss)
-    if (is.nan(loss_val_numeric) || is.infinite(loss_val_numeric)) {
-      print("EXPLODING GRADIENTS DETECTED IN TENSORFLOW (NaN/Inf loss)!")
-      print("Consider adding gradient clipping inside train_step_tf function.")
+    if (is.nan(current_epoch_sum_loss) || is.infinite(current_epoch_sum_loss)) {
+      cat("⚠️  EXPLODING GRADIENTS DETECTED IN TENSORFLOW (NaN/Inf loss)!\n")
+      cat("💡  Consider adding gradient clipping inside train_step_tf function.\n")
       break
     }
   }
 }
 
 # --- End of TensorFlow Section ---
+
+# --- for comparison of gradient and mse please refer to me the RMD file ---
 
 
 
