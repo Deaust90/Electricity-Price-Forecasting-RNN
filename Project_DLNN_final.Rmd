@@ -11,8 +11,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = TRUE,
-  eval = FALSE,
+  echo = TRUE,       
   results = 'hide',  
   warning = FALSE,    
   message = FALSE     
@@ -59,15 +58,15 @@ bgd <- function(weights, y, X, hid_n, out_n, nn, costderiv,
 
 # Standard Recurrent Neural Network (RNN)
 
-## Setting up the data
+## Data Setup
 
 ```{r Setting up the data}
 # add the path to the function here
-#source("C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\funcs_mlr.R")
+source("C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\funcs_mlr.R")
 
 csv_files <- list.files(
-  # path = "C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\data_rnn",
-  path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task/data_rnn", 
+  path = "C:\\Users\\udwal\\Documents\\Studies_Viadrina\\semester_3\\DeepLearning\\project\\data_rnn",
+  # path = "/Users/andrescadena/Library/CloudStorage/OneDrive-europa-uni.de/Deep-NN/Project Task/data_rnn", 
   pattern = "\\.csv$", 
   full.names = TRUE)
 
@@ -114,7 +113,7 @@ complete_data <- complete_data %>%
 verify <- sum(is.na(complete_data$Price))  #Should return 0
 ```
 
-## Setting up the independent and dependent variables
+## Independent and Dependent Variables Setup
 
 ```{r Setting up the independent and dependent variables, fig.show='hide'}
 lookback <- 24
@@ -151,7 +150,7 @@ target <- plot(y_train_scaled, type = "l", main = "Target over Time (Standardize
 abline(h = 0, col = "red", lty = 2)
 ```
 
-## RNN implementation using a simple architecture
+## RNN Implementation
 
 ```{r RNN implementation using a simple architecture (many to one RNN)}
 # Xavier initialization
@@ -379,7 +378,7 @@ rnn_predict_for_bgd_wrapper <- function(flat_weights, X, hid_n, out_n, input_dim
 }
 ```
 
-## Training Vs. Validation
+## Training and Validation
 
 ```{r Training Vs. Validation, eval=FALSE, include=TRUE}
 input_dim <- 1  
@@ -561,10 +560,12 @@ We used prompts such as:
 
 This helped us focus on parameters like weight shapes, loss function definitions, input tensor formats, and gradient behavior that could cause divergence between the R and TensorFlow implementations.
 
+We have also used AI in our reflection parts to paraphrase our text to make it more readable and concise. Since we are not English native speakers, we found using AI to improve the message we are trying to convey to be effective.
+
 
 # Tensorflow's Recurrent Neural Network (RNN)
 
-## TensorFlow model definition and manual weight setting
+## TF model Definition &  Manual Weight Import
 
 ```{r}
 
@@ -656,7 +657,7 @@ print("TensorFlow model defined and weights manually set from R initial weights.
 summary(model_tf_manual_weights)
 ```
 
-## Reshape input data for TensorFlow and compiling
+## Reshape Input Data & Compile
 
 ```{r}
 num_train_samples <- nrow(x_train)
@@ -685,7 +686,7 @@ loss_fn_tf_reporting_mean_mse <- tf$keras$losses$MeanSquaredError()
 
 ```
 
-## TensorFlow BGD training loop
+## TF BGD Training Loop
 
 ```{r, fig.show='hide'}
 
@@ -737,11 +738,12 @@ for (epoch in 1:tf_epochs) {
   current_epoch_sum_loss <- as.numeric(train_result$loss)
   tf_train_custom_sum_loss_epoch[epoch] <- current_epoch_sum_loss
   
-  # --- 2. Sum of gradients (for comparison)
+  # --- 2. Sum of gradients (for comparison, L2 norm)
+  grads <- train_result$grads
   grad_sums_tf[epoch] <- sqrt(sum(sapply(grads, function(g) {
   if (is.null(g)) return(0)
   sum(g$numpy()^2)
-})))
+  })))
   
   # --- 3. Train and validation MSE
   train_preds_tf_epoch <- model_tf_manual_weights(x_train_tf, training = FALSE)
@@ -775,24 +777,52 @@ for (epoch in 1:tf_epochs) {
 
 ## Comparison Summary of Standard and TF RNN
 
-
-
 ```{r}
+
+train_losses <- loss_df$Loss[loss_df$Type == "Train"]
+val_losses <- loss_df$Loss[loss_df$Type == "Validation"]
+
 mean_summary <- tibble::tibble(
   Metric = c("Train MSE", "Validation MSE", "Gradient Sum L2 Norm"),
-  `Base R` = c(mean(train_losses), mean(val_losses), mean(grad_sums_r)),
-  TensorFlow = c(mean(tf_train_reported_mse_epoch), mean(tf_val_reported_mse_epoch), mean(grad_sums_tf))
+  
+  `Base R (mean)` = c(
+    round(mean(train_losses), 4),
+    round(mean(val_losses), 4),
+    round(mean(grad_sums_r), 4)
+  ),
+  
+  `Base R (epoch 100)` = c(
+    round(train_losses[100], 4),
+    round(val_losses[100], 4),
+    round(grad_sums_r[10], 4)  # because we saved every 10 epochs
+  ),
+  
+  `TF (mean)` = c(
+    round(mean(tf_train_reported_mse_epoch), 4),
+    round(mean(tf_val_reported_mse_epoch), 4),
+    round(mean(grad_sums_tf), 4)
+  ),
+  
+  `TF (epoch 100)` = c(
+    round(tf_train_reported_mse_epoch[100], 4),
+    round(tf_val_reported_mse_epoch[100], 4),
+    round(grad_sums_tf[100], 4)
+  )
 )
 
 print(mean_summary)
 
+
 ```
+- Our MSE values from the base R and TensorFlow implementations converged fairly closely by the 100th epoch, especially compared to where they started. However, small differences remained, largely due to the way TensorFlow handles gradient computation. TensorFlow’s GradientTape efficiently computes gradients, even for complex neural networks with millions of parameters, and is highly optimized for numerical stability. In contrast, our manual gradient implementation in base R is more error-prone and less efficient. This is reflected in the differences in the sum of gradients between the two models, despite our earlier use of gradient checking. These discrepancies highlight the reliability and robustness of TensorFlow’s automatic differentiation.
+
+- Another clear observation was TensorFlow’s significantly faster training performance. While base R processed each epoch sequentially and without hardware acceleration, TensorFlow leveraged optimized computation graphs and could run on both CPUs and GPUs,  greatly accelerating training, even with a relatively simple model.
 
 ## Biggest challenge II
 
 ## Achieving similar results in tensorFlow compared to the standard RNN in R
 
-Reproducing the behavior of a standard RNN implemented in R using TensorFlow required several key adjustments. Understanding how the R-based RNN achieved its loss values—and what computational assumptions it made—was crucial for aligning TensorFlow's setup accordingly.
+Reproducing the behavior of a standard RNN implemented in R using TensorFlow required several key adjustments. Understanding how the R-based RNN achieved its loss values, and what computational assumptions it made, was crucial for aligning TensorFlow's setup accordingly.
 
 -   **Weight import:**\
     Although we initialized the weights in TensorFlow using the same seed and structure, the model's performance initially differed significantly from the R implementation. To resolve this, we directly imported the R-initialized weights into the TensorFlow model, ensuring both models started from the exact same parameters.
@@ -801,7 +831,7 @@ Reproducing the behavior of a standard RNN implemented in R using TensorFlow req
     In our custom R training loop, gradients are computed based on the **sum** of the loss across all samples (as is typical in Batch Gradient Descent). By contrast, TensorFlow defaults to using the **mean**. To match the R behavior, we implemented a custom loss function in TensorFlow that preserved the summed gradient behavior.
 
 -   **Loss function definition:**\
-    Our course defined the loss as $0.5 \times (y_{\text{true}} - \hat{y})^2$, whereas TensorFlow's built-in loss functions typically compute the mean squared error $\text{mean}((y_{\text{true}} - y_{\text{pred}})^2)$. We addressed this mismatch by defining a custom loss function in TensorFlow that explicitly matched the R formulation.
+    Our course defined the loss as $0.5 \times (y_{\text{true}} - \hat{y})^2$, whereas TensorFlow's built-in loss functions typically compute the mean squared error $\text{mean}((y_{\text{true}} - y_{\text{pred}})^2)$. We addressed this mismatch by defining a custom loss function in TensorFlow that explicitly matched the R formulation. However, for reporting we used TF's custom loss function as this gives us comparison and interpretability.
 
 -   **TensorFlow input format:**\
     In R, the input data was shaped as `(samples, timesteps)`. However, TensorFlow expects RNN input in the format `(samples, timesteps, features)`. We resolved this discrepancy by explicitly reshaping the input arrays before feeding them into the TensorFlow model.
