@@ -738,11 +738,10 @@ for (epoch in 1:tf_epochs) {
   tf_train_custom_sum_loss_epoch[epoch] <- current_epoch_sum_loss
   
   # --- 2. Sum of gradients (for comparison)
-  grads <- train_result$grads
-  grad_sums_tf[epoch] <- sum(sapply(grads, function(g) {
-    if (is.null(g)) return(0)
-    sum(g$numpy())
-  }))
+  grad_sums_tf[epoch] <- sqrt(sum(sapply(grads, function(g) {
+  if (is.null(g)) return(0)
+  sum(g$numpy()^2)
+})))
   
   # --- 3. Train and validation MSE
   train_preds_tf_epoch <- model_tf_manual_weights(x_train_tf, training = FALSE)
