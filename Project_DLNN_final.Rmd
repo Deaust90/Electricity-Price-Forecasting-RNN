@@ -1,7 +1,7 @@
 ---
 title: "Project Deep Learning and Neural Networks"
 author: "Udval Oyunsaikhan and Andres Cadena"
-date: "2025-05-24"
+date: "2025-05-29"
 output:
   rmdformats::readthedown:
     css: RMD.css
