@@ -1,3 +1,4 @@
+![Project Banner](./Banner.png)
 # Home Assignment in Deep Learning and Neural Networks
 
 This repository contains the final assignment for the *Deep Learning and Neural Networks* course. The project explores Recurrent Neural Networks (RNNs) implemented both in base R and using TensorFlow, along with a numerical gradient check for model verification.
