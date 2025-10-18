@@ -5,7 +5,7 @@ This repository contains the final assignment for the *Deep Learning and Neural 
 
 ## Authors
 - Udval Oyunsaikhan  
-- Cadena Bolaños Andres Felipe
+- Andres Cadena
 
 ## Repository Structure
 
