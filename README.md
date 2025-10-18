@@ -9,20 +9,15 @@ This repository contains the final assignment for the *Deep Learning and Neural 
 
 ## Repository Structure
 
-- `parameters_reference_only.R`  
-  ➤ Contains a reference list of hyperparameters used throughout the project.
+- `parameters_reference_only.R` ➤ Contains a reference list of hyperparameters used throughout the project.
 
-- `project_a1.R`  
-  ➤ Implementation of an RNN using base R.
+- `project_a1.R` ➤ Implementation of an RNN using base R.
 
-- `project_a2.R`  
-  ➤ Implementation of an RNN using TensorFlow (via `tensorflow` package in R).
+- `project_a2.R` ➤ Implementation of an RNN using TensorFlow (via `tensorflow` package in R).
 
-- `gradient_check.R`  
-  ➤ Performs a numerical gradient check to validate the gradient computations.
+- `gradient_check.R` ➤ Performs a numerical gradient check to validate the gradient computations.
 
-- `funcs_mlr.R`  
-➤ Contains a reference list of hyperparameters used throughout the project. Please make sure to use this file as custom BGD function has been revised from the course provided file.
+- `funcs_mlr.R` ➤ Contains a reference list of hyperparameters used throughout the project. Please make sure to use this file as the custom BGD function has been revised from the course-provided file.
 
 ## Instructions to Run
 
